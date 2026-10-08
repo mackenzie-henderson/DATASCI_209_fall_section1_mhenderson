@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 import pandas as pd
 import sqlite3
 import os
@@ -29,6 +29,29 @@ def players_count():
 
     conn.close()
     return {"count": count}
+
+@app.route('/players/get_nationality')
+def get_nationality():
+    player = request.args.get('player')
+
+    if not player:
+        return {"error": "Please provide a player name"}, 400
+
+    db_path = os.path.join(app.root_path, 'players_20.db')
+    conn = sqlite3.connect(db_path)
+
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT nationality FROM players WHERE short_name = ?",
+        (player,)
+    )
+    result = cursor.fetchone()
+    conn.close()
+
+    if result:
+        return {"nationality": result[0]}
+    else:
+        return {"error": "Player not found"}, 404
 
 @app.route('/getData/<year>')
 def getData(year):
