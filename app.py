@@ -1,5 +1,7 @@
 from flask import Flask, render_template
 import pandas as pd
+import sqlite3
+import os
 
 app = Flask(__name__)
 
@@ -11,6 +13,22 @@ def w209():
 @app.route('/map')
 def map():
     return render_template('map.html')
+
+@app.route('/api')
+def api():
+    return {"x": 42}
+
+@app.route('/players/count')
+def players_count():
+    db_path = os.path.join(app.root_path, 'players_20.db')
+    conn = sqlite3.connect(db_path)
+
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM players")
+    count = cursor.fetchone()[0]
+
+    conn.close()
+    return {"count": count}
 
 @app.route('/getData/<year>')
 def getData(year):
